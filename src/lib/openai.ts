@@ -19,7 +19,7 @@ export const generateLongFormContentStream = async (
   try {
     // Use the chat-based endpoint with the chat model and enable streaming
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
       max_tokens: maxTokens,
       temperature: temperature,

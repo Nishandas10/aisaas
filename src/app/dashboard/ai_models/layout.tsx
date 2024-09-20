@@ -7,38 +7,40 @@ import React, { useEffect, useState } from 'react';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname(); // Get the current path
-  const [isBouncing, setIsBouncing] = useState(false); // State for bounce effect
+  // const [isBouncing, setIsBouncing] = useState(false); // State for bounce effect
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const maxScrollDistance = 100; // Define how much the user can scroll down (in pixels)
-      const scrollDistance = window.scrollY;
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     const maxScrollDistance = 100; // Define how much the user can scroll down (in pixels)
+  //     const scrollDistance = window.scrollY;
 
-      // If the user scrolls down a little, trigger the bounce effect
-      if (scrollDistance > 0 && scrollDistance <= maxScrollDistance) {
-        setIsBouncing(true);
-        setTimeout(() => {
-          // Scroll back to the top with a smooth animation
-          window.scrollTo({
-            top: 0,
-            behavior: 'smooth',
-          });
-          setIsBouncing(false); // Remove the bounce state after the scroll
-        }, 300); // Set the delay for the bounce effect (300ms)
-      }
-    };
+  //     // If the user scrolls down a little, trigger the bounce effect
+  //     if (scrollDistance > 0 && scrollDistance <= maxScrollDistance) {
+  //       setIsBouncing(true);
+  //       setTimeout(() => {
+  //         // Scroll back to the top with a smooth animation
+  //         window.scrollTo({
+  //           top: 0,
+  //           behavior: 'smooth',
+  //         });
+  //         setIsBouncing(false); // Remove the bounce state after the scroll
+  //       }, 300); // Set the delay for the bounce effect (300ms)
+  //     }
+  //   };
 
-    window.addEventListener('scroll', handleScroll);
+  //   window.addEventListener('scroll', handleScroll);
 
-    return () => {
-      window.removeEventListener('scroll', handleScroll); // Cleanup event listener
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('scroll', handleScroll); // Cleanup event listener
+  //   };
+  // }, []);
+
+  //  ${
+  //       isBouncing ? 'bounce' : ''
 
   return (
     <div
-      className={`min-h-screen bg-gray-900 text-white flex flex-col justify-between ${
-        isBouncing ? 'bounce' : ''
+      className={`min-h-screen bg-gray-900 text-white flex flex-col justify-between
       }`}
     >
       {/* Main content area */}

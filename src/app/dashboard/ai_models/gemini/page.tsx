@@ -1,11 +1,12 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { FaLightbulb, FaTshirt, FaEnvelopeOpenText, FaPlane } from 'react-icons/fa';
 import Header from '../components/header';
 
+
 const GeminiPage: React.FC = () => {
-
-
+ 
+//ing spiner if you prefer
   return (
     <div className={`flex flex-col justify-between min-h-screen bg-gray-900`}>
       {/* Main Content */}
