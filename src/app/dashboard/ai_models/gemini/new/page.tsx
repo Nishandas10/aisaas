@@ -25,81 +25,79 @@ const GeminiChatPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [hasProcessedInitialPrompt, setHasProcessedInitialPrompt] = useState(false); // Track initial prompt handling
   const [isProcessing, setIsProcessing] = useState(false); // Control API processing
+  const [lastPrompt, setLastPrompt] = useState<string | null>(null);
 
   const searchParams = useSearchParams();
   const existingPrompt = searchParams?.get('page') || ''; // Get the initial prompt from URL
 
-  // Fetch AI response logic
-  const fetchAIResponse = useCallback(
-    async (submittedPrompt: string) => {
-      const debouncedFetch = debounce(async (submittedPrompt: string) => {
-        if (isProcessing) return; // Prevent further processing if a request is in-flight
+  // Debounced fetch AI response logic
+  const fetchAIResponseDebounced = useCallback(
+    debounce(async (submittedPrompt: string) => {
+      if (isProcessing || submittedPrompt === lastPrompt) return;
 
-        setIsProcessing(true);
-        setLoading(true);
+      setIsProcessing(true);
+      setLoading(true);
+      setLastPrompt(submittedPrompt); // Update the last prompt
 
-        try {
-          const res = await fetch('/api/ai-stream', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              prompt: submittedPrompt,
-              chatHistory: response, // Pass chat history along with the new prompt
-            }),
-          });
+      try {
+        const res = await fetch('/api/ai-stream', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: submittedPrompt,
+            chatHistory: response, // Pass chat history along with the new prompt
+          }),
+        });
 
-          if (!res.body) throw new Error('No response body from AI stream');
+        if (!res.body) throw new Error('No response body from AI stream');
 
-          const reader = res.body.getReader();
-          const decoder = new TextDecoder();
-          let done = false;
-          let aiResponse = '';
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        let aiResponse = '';
 
-          // Read the streamed response chunk by chunk
-          while (!done) {
-            const { value, done: readerDone } = await reader.read();
-            done = readerDone;
-            aiResponse += decoder.decode(value);
-          }
-
-          // Update the chat history
-          setResponse((prev) => [
-            ...prev,
-            { role: 'user', content: submittedPrompt },
-            { role: 'assistant', content: aiResponse },
-          ]);
-
-          setPrompt(''); // Clear the input field
-        } catch (error) {
-          console.error('Error fetching AI response:', error);
-        } finally {
-          setLoading(false);
-          setIsProcessing(false);
+        // Read the streamed response chunk by chunk
+        while (!done) {
+          const { value, done: readerDone } = await reader.read();
+          done = readerDone;
+          aiResponse += decoder.decode(value);
         }
-      }, 1000);
 
-      debouncedFetch(submittedPrompt);
-    },
-    [response, isProcessing] // Add debounce to the dependency array
+        // Update the chat history using functional update
+        setResponse((prev) => [
+          ...prev,
+          { role: 'user', content: submittedPrompt },
+          { role: 'assistant', content: aiResponse },
+        ]);
+
+        setPrompt(''); // Clear the input field
+      } catch (error) {
+        console.error('Error fetching AI response:', error);
+      } finally {
+        setLoading(false);
+        setIsProcessing(false);
+      }
+    }, 1000), // Wait time of 1000ms for debounce
+    [isProcessing, lastPrompt, response] // Add response to the dependency array
   );
-
-  // Handle the initial prompt only once on page load
-  useEffect(() => {
-    if (existingPrompt && !hasProcessedInitialPrompt) {
-      setHasProcessedInitialPrompt(true); // Mark initial prompt as handled
-      fetchAIResponse(existingPrompt); // Fetch AI response for the initial prompt
-    }
-  }, [existingPrompt, hasProcessedInitialPrompt, fetchAIResponse]);
 
   // Handle form submission for new prompts
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim() && !isProcessing) {
-      await fetchAIResponse(prompt); // Fetch response for user-entered prompt
+      fetchAIResponseDebounced(prompt); // Use the debounced function for the prompt
     }
   };
+
+  // Handle the initial prompt only once on page load
+  useEffect(() => {
+    if (existingPrompt && !hasProcessedInitialPrompt) {
+      setHasProcessedInitialPrompt(true); // Mark initial prompt as handled
+      fetchAIResponseDebounced(existingPrompt); // Fetch AI response for the initial prompt
+    }
+  }, [existingPrompt, hasProcessedInitialPrompt, fetchAIResponseDebounced]);
 
   return (
     <div className="flex flex-col justify-between min-h-screen p-10 bg-gray-900 text-white">
@@ -124,7 +122,7 @@ const GeminiChatPage: React.FC = () => {
           type="text"
           placeholder="Enter a prompt"
           value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
+          onChange={(e) => setPrompt(e.target.value)} // Only update the value here, no API call
           className="flex-grow p-3 rounded-lg bg-gray-800 text-white"
         />
         <button type="submit" className="ml-2 p-3 bg-indigo-600 rounded-lg" disabled={loading || isProcessing}>
