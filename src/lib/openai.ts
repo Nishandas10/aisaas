@@ -1,4 +1,3 @@
-// utils/openai.ts
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -7,7 +6,7 @@ const openai = new OpenAI({
 
 export const generateLongFormContentStream = async (
   prompt: string,
-  maxTokens: number = 3000,
+  maxTokens: number = 4000, // Adjust for longer content
   temperature: number = 0.7,
   onStream: (content: string) => void // Callback function to handle streaming content
 ) => {
@@ -17,12 +16,19 @@ export const generateLongFormContentStream = async (
   }
 
   try {
-    // Use the chat-based endpoint with the chat model and enable streaming
+    // Use the GPT-4 model (or GPT-3.5-turbo if GPT-4 isn't available), with chat completions and streaming
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: maxTokens,
-      temperature: temperature,
+      model: "gpt-4o-mini", // GPT-4 can be better for generating more detailed, coherent long-form content
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a chat completion AI that provides detailed and comprehensive long-form content in response to user questions.",
+        },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: maxTokens, // Longer token limit for more detailed output
+      temperature: temperature, // Adjust temperature for creativity/control
       stream: true, // Enable streaming
     });
 
