@@ -48,7 +48,7 @@ const LandingPage: React.FC = () => {
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
                 <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
-                  Generate Content with AI
+                  Generate Content with AI and LLMs
                 </h1>
                 <p className="mx-auto max-w-[700px] text-gray-600">
                   Create high-quality content in seconds with our advanced AI. Perfect for bloggers, marketers, and content creators.
